@@ -400,7 +400,7 @@ setInterval(() => {
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0'; // Listen on all network interfaces
 server.listen(PORT, HOST, () => {
-  console.log(`SOMETHING server running on http://${HOST}:${PORT}`);
+  console.log(`Back Channel server running on http://${HOST}:${PORT}`);
   console.log(`Local access: http://localhost:${PORT}`);
   console.log(`Network access: http://10.45.2.145:${PORT}`);
   console.log('Server configured for maximum privacy and security');

@@ -13,7 +13,7 @@
     <!-- Primary CryptoJS CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <!-- Anti-Screenshot Protection -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
     <style>
         /* Prevent screenshots and screen recording */
         body {
@@ -323,15 +323,24 @@
 
         <!-- Main Chat Interface -->
         <div id="chat-container">
-            <div id="messages"></div>
+            <div id="messages" style="display:none;"></div>
             
             <!-- Input Area -->
             <div id="input-area">
                 <div id="room-controls">
                     <input type="text" id="room-input" placeholder="Enter room ID to join" maxlength="32">
-                    <button id="join-room-btn">Join Room</button>
                     <button id="new-room-btn">New Room</button>
                     <button id="end-room-btn" style="display:none; margin-left: 8px;">End Room</button>
+                    <div id="creator-pin-display" style="display:none; margin-top:8px; color:#ff9800; font-weight:bold;"></div>
+                </div>
+                <!-- Pin Overlay -->
+                <div id="pin-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10000; display:flex; align-items:center; justify-content:center;">
+                    <div style="background:#222; padding:32px 24px; border-radius:12px; box-shadow:0 4px 24px #000a; text-align:center; min-width:280px;">
+                        <h2 style="color:#fff; margin-bottom:16px;">Enter Access Pin</h2>
+                        <input type="text" id="pin-input" placeholder="Enter access pin" maxlength="12" style="font-size:1.2em; padding:8px 12px; border-radius:6px; border:1px solid #555; margin-bottom:16px; width:100%; background:#111; color:#fff;">
+                        <button id="join-room-btn" style="margin-top:8px; padding:8px 24px; font-size:1em; border-radius:6px; background:#2196f3; color:#fff; border:none; cursor:pointer; opacity:0.5;" disabled>Join Room</button>
+                        <div id="pin-error" style="color:#ff6666; margin-top:12px; display:none;"></div>
+                    </div>
                 </div>
                 
                 <div id="message-input-container">

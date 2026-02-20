@@ -29,6 +29,20 @@ class SecureChat {
         this.checkCryptoAvailability();
         this.initializePerfectForwardSecrecy();
         this.updateConnectionStatus('Initializing...');
+        this.setupPinHandlers();
+    }
+
+    setupPinHandlers() {
+        // Show access pin to creator
+        if (this.socket) {
+            this.socket.on('room-created', (data) => {
+                const pinDisplay = document.getElementById('creator-pin-display');
+                if (pinDisplay) {
+                    pinDisplay.style.display = '';
+                    pinDisplay.textContent = `Access Pin: ${data.accessPin}`;
+                }
+            });
+        }
     }
 
     setupEventListeners() {
@@ -110,6 +124,7 @@ class SecureChat {
                 this.updateConnectionStatus('Connected');
                 this.updateConnectionType('WebSocket');
                 console.log('Connected to server');
+                console.log('%c[Connection Established] Socket.io connection is now active.', 'color: #00ff00; font-weight: bold;');
             });
 
             this.socket.on('disconnect', () => {
@@ -142,8 +157,21 @@ class SecureChat {
                 this.displaySystemMessage('⚠️ Messages auto-clear after 20 seconds for security');
                 // Generate or use shared room encryption key
                 this.roomEncryptionKey = data.roomKey || this.generateRoomKey();
-                console.log('Using room encryption key:', this.roomEncryptionKey);
-                this.loadMessages(data.messages);
+                // Always show messages and input for creator
+                if (this.isRoomCreator) {
+                    document.getElementById('messages').style.display = '';
+                    document.getElementById('message-input-container').style.display = '';
+                    if (data.messages && data.messages.length > 0) {
+                        this.loadMessages(data.messages);
+                    }
+                } else {
+                    // For joiners, always show messages and input after pin validation
+                    document.getElementById('messages').style.display = '';
+                    document.getElementById('message-input-container').style.display = '';
+                    if (data.messages && data.messages.length > 0) {
+                        this.loadMessages(data.messages);
+                    }
+                }
                 console.log('Joined room:', this.roomId);
                 this.disableRoomControls();
             });
@@ -647,12 +675,20 @@ class SecureChat {
         }
         const roomInput = document.getElementById('room-input');
         const roomId = roomInput.value.trim();
+        const pinInput = document.getElementById('pin-input');
+        const accessPin = pinInput.value.trim();
         if (!roomId) {
             this.displaySystemMessage('Please enter a Room ID to join.');
             return;
         }
-        this.socket.emit('join-room', { roomId });
+        // Always show pin input when a room code is entered
+        pinInput.style.display = '';
+        // Hide message input and messages until pin is validated
+        document.getElementById('messages').style.display = 'none';
+        document.getElementById('message-input-container').style.display = 'none';
+        this.socket.emit('join-room', { roomId, accessPin });
         roomInput.value = '';
+        pinInput.value = '';
     }
 
     createNewRoom() {
@@ -1199,22 +1235,75 @@ class SecureChat {
 document.addEventListener('DOMContentLoaded', () => {
     window.secureChat = new SecureChat();
 
-    // If a room code is present in the URL path, auto-fill and join that room
+    // Check for room code in URL path or search params
     const pathRoom = window.location.pathname.replace(/^\//, '');
-    if (pathRoom && pathRoom.length > 0 && !pathRoom.includes('.')) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchRoom = urlParams.get('room');
+    let roomCode = '';
+    if (searchRoom && searchRoom.trim().length > 0) {
+        roomCode = searchRoom.trim();
+    } else if (pathRoom && pathRoom.length > 0 && !pathRoom.includes('.')) {
+        roomCode = pathRoom;
+    }
+    const pinOverlay = document.getElementById('pin-overlay');
+    if (roomCode) {
+        // Auto-fill room input and show pin overlay
         const roomInput = document.getElementById('room-input');
         if (roomInput) {
-            roomInput.value = pathRoom;
-            // Wait for socket connection before joining
-            const tryJoin = () => {
-                if (window.secureChat && window.secureChat.isConnected) {
-                    window.secureChat.joinRoom();
-                } else {
-                    setTimeout(tryJoin, 200);
-                }
-            };
-            tryJoin();
+            roomInput.value = roomCode;
         }
+        if (pinOverlay) {
+            pinOverlay.style.display = 'flex';
+            pinOverlay.classList.add('active');
+        }
+        // Hide messages, input area, and room controls until pin is validated
+        const messages = document.getElementById('messages');
+        const inputArea = document.getElementById('message-input-container');
+        const roomControls = document.getElementById('room-controls');
+        if (messages) messages.style.display = 'none';
+        if (inputArea) inputArea.style.display = 'none';
+        if (roomControls) roomControls.style.display = 'none';
+        // Enable join button only when pin is entered
+        const pinInput = document.getElementById('pin-input');
+        const joinBtn = document.getElementById('join-room-btn');
+        pinInput.addEventListener('input', () => {
+            if (pinInput.value.trim().length > 0) {
+                joinBtn.disabled = false;
+                joinBtn.classList.add('enabled');
+            } else {
+                joinBtn.disabled = true;
+                joinBtn.classList.remove('enabled');
+            }
+        });
+        joinBtn.addEventListener('click', () => {
+            if (pinOverlay) {
+                pinOverlay.classList.remove('active');
+                pinOverlay.style.display = 'none';
+            }
+            // Reveal messages, input area, and room controls after pin is validated
+            if (messages) messages.style.display = '';
+            if (inputArea) inputArea.style.display = '';
+            if (roomControls) roomControls.style.display = '';
+            // Ensure user ID is not changed
+            const prevUserId = window.secureChat.userId;
+            window.secureChat.joinRoom();
+            // Restore user ID if changed (should not happen, but for safety)
+            if (window.secureChat.userId !== prevUserId) {
+                window.secureChat.userId = prevUserId;
+                document.getElementById('user-id').textContent = `ID: ${prevUserId}`;
+            }
+        });
+    } else {
+        // No room code, session open for creating a room
+        if (pinOverlay) {
+            pinOverlay.classList.remove('active');
+            pinOverlay.style.display = 'none';
+        }
+        // Show messages and input area by default
+        const messages = document.getElementById('messages');
+        const inputArea = document.getElementById('message-input-container');
+        if (messages) messages.style.display = '';
+        if (inputArea) inputArea.style.display = '';
     }
 
     // Cleanup on page unload
@@ -1257,4 +1346,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.clear();
     console.log('Secure Anonymous Chat Platform');
     console.log('All communications are encrypted and anonymous');
-})(); 
+})();

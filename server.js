@@ -202,14 +202,21 @@ function generateRoomId() {
   return crypto.randomBytes(16).toString('hex');
 }
 
-// Generate room encryption key
 function generateRoomKey() {
   return crypto.randomBytes(16).toString('hex');
 }
 
-// Generate temporary user ID
 function generateUserId() {
   return crypto.randomBytes(8).toString('hex');
+}
+
+function generateAccessPin(length = 6) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let pin = '';
+  for (let i = 0; i < length; i++) {
+    pin += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pin;
 }
 
 io.on('connection', (socket) => {
@@ -231,30 +238,43 @@ io.on('connection', (socket) => {
     if (!session) return;
 
     let roomId = data.roomId;
-    
+    let accessPin = data.accessPin;
+
     // Create new room if none exists
     if (!roomId || !chatRooms.has(roomId)) {
       roomId = generateRoomId();
       const roomKey = generateRoomKey();
+      const pin = generateAccessPin();
       chatRooms.set(roomId, {
         users: new Set(),
         messages: [],
         created: Date.now(),
         encryptionKey: roomKey,
-        creatorId: userId
+        creatorId: userId,
+        accessPin: pin
       });
+      // Send pin to creator
+      socket.emit('room-created', { roomId, accessPin: pin });
     }
 
     session.roomId = roomId;
     socket.join(roomId);
-    
+
     const room = chatRooms.get(roomId);
     room.users.add(userId);
 
+    // If joining (not creating), verify pin
+    if (accessPin && room.accessPin && accessPin !== room.accessPin) {
+      socket.emit('room-join-failed', { reason: 'Invalid access pin.' });
+      return;
+    }
+
+    // Only send messages if pin is correct or creator
+    const canViewMessages = (!accessPin && userId === room.creatorId) || (accessPin === room.accessPin);
     socket.emit('room-joined', { 
       roomId,
       userCount: room.users.size,
-      messages: room.messages.slice(-50), // Last 50 messages
+      messages: canViewMessages ? room.messages.slice(-50) : [], // Last 50 messages or empty
       roomKey: room.encryptionKey,
       creatorId: room.creatorId
     });

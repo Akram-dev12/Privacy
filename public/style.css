@@ -1,4 +1,45 @@
 /* Reset and base styles */
+/* Pin Overlay Styles */
+#pin-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+#pin-overlay.active {
+    display: flex !important;
+}
+#pin-overlay input {
+    font-size: 1.2em;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    margin-bottom: 16px;
+    width: 100%;
+    background: #111;
+    color: #fff;
+}
+#pin-overlay button {
+    margin-top: 8px;
+    padding: 8px 24px;
+    font-size: 1em;
+    border-radius: 6px;
+    background: #2196f3;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    opacity: 0.5;
+}
+#pin-overlay button.enabled {
+    opacity: 1;
+    cursor: pointer;
+}
 * {
     margin: 0;
     padding: 0;
@@ -60,7 +101,20 @@ body::before {
     50% { transform: translateX(0.2px) translateY(0.1px); }
     100% { transform: translateX(0px) translateY(0px); }
 }
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #222;
+    z-index: 100;
+    padding: 12px 8px;
+}
 
+@media (max-width: 600px) {
+    #message-input-container {
+        margin-bottom: 100px;
+    }
+}
 /* 2. Very subtle color shifting */
 body::after {
     content: '';

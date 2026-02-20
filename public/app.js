@@ -134,20 +134,18 @@ class SecureChat {
                 this.roomId = data.roomId;
                 this.isRoomCreator = (this.userId === data.creatorId);
                 document.getElementById('room-info').textContent = `Room: ${this.roomId} (${data.userCount} users)`;
-                document.getElementById('copy-room-btn').style.display = '';
+                // Only show copy button if user is the creator
+                document.getElementById('copy-room-btn').style.display = this.isRoomCreator ? '' : 'none';
                 document.getElementById('end-room-btn').style.display = '';
                 document.getElementById('end-room-btn').disabled = !this.isRoomCreator;
                 this.displaySystemMessage(`Joined room ${this.roomId}`);
                 this.displaySystemMessage('⚠️ Messages auto-clear after 20 seconds for security');
-                
                 // Generate or use shared room encryption key
                 this.roomEncryptionKey = data.roomKey || this.generateRoomKey();
                 console.log('Using room encryption key:', this.roomEncryptionKey);
-                
                 this.loadMessages(data.messages);
                 console.log('Joined room:', this.roomId);
                 this.disableRoomControls();
-                document.getElementById('copy-room-btn').style.display = '';
             });
 
             this.socket.on('user-joined', (data) => {
@@ -1017,6 +1015,10 @@ class SecureChat {
 
     copyRoomId() {
         if (!this.roomId) return;
+        if (!this.isRoomCreator) {
+            this.displaySystemMessage('Only the room creator can copy the room link.');
+            return;
+        }
         // Build the full URL with the room code appended as a path
         const url = `${window.location.origin.replace(/\/$/, '')}/${this.roomId}`;
         navigator.clipboard.writeText(url).then(() => {

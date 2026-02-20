@@ -645,6 +645,9 @@ button:disabled {
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+    #messages {
+        font-size: .8em !important;
+    }
 
     body{
         font-size: .08em !important;

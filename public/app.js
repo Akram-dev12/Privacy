@@ -1017,10 +1017,12 @@ class SecureChat {
 
     copyRoomId() {
         if (!this.roomId) return;
-        navigator.clipboard.writeText(this.roomId).then(() => {
-            this.displaySystemMessage('Room ID copied to clipboard!');
+        // Build the full URL with the room code appended as a path
+        const url = `${window.location.origin.replace(/\/$/, '')}/${this.roomId}`;
+        navigator.clipboard.writeText(url).then(() => {
+            this.displaySystemMessage('Room link copied to clipboard!');
         }).catch(() => {
-            this.displaySystemMessage('Failed to copy Room ID.');
+            this.displaySystemMessage('Failed to copy room link.');
         });
     }
 
@@ -1194,7 +1196,25 @@ class SecureChat {
 // Initialize the application when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.secureChat = new SecureChat();
-    
+
+    // If a room code is present in the URL path, auto-fill and join that room
+    const pathRoom = window.location.pathname.replace(/^\//, '');
+    if (pathRoom && pathRoom.length > 0 && !pathRoom.includes('.')) {
+        const roomInput = document.getElementById('room-input');
+        if (roomInput) {
+            roomInput.value = pathRoom;
+            // Wait for socket connection before joining
+            const tryJoin = () => {
+                if (window.secureChat && window.secureChat.isConnected) {
+                    window.secureChat.joinRoom();
+                } else {
+                    setTimeout(tryJoin, 200);
+                }
+            };
+            tryJoin();
+        }
+    }
+
     // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
         if (window.secureChat) {

@@ -58,6 +58,7 @@ app.use(cors());
 app.use(compression());
 app.use(express.json());
 app.use(express.static('public'));
+// ...existing code...
 
 // Privacy headers
 app.use((req, res, next) => {
@@ -398,6 +399,10 @@ setInterval(() => {
 }, 60 * 60 * 1000); // Run every hour
 
 const PORT = process.env.PORT || 3000;
+// Serve index.html for all unmatched routes (SPA support) -- must be last
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 const HOST = '0.0.0.0'; // Listen on all network interfaces
 server.listen(PORT, HOST, () => {
   console.log(`Back Channel server running on http://${HOST}:${PORT}`);

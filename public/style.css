@@ -645,6 +645,11 @@ button:disabled {
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+
+    body{
+        font-size: .08em !important;
+    }
+
     #status-bar {
         flex-direction: column;
         gap: 4px;
@@ -652,22 +657,39 @@ button:disabled {
     }
     
     #room-controls {
-        flex-direction: column;
+        flex-direction: row;
+        align-items: center;
         gap: 8px;
+    }
+    #room-input {
+        flex: 2 1 60%;
+        min-width: 0;
+    }
+    #join-room-btn,
+    #new-room-btn {
+        flex: 1 1 20%;
+        min-width: 0;
+        max-width: 90px;
     }
     
     #message-input-container {
-        flex-direction: column;
+        flex-direction: row;
+        align-items: flex-end;
+        gap: 8px;
     }
     
     #security-info {
         flex-direction: column;
         gap: 8px;
         text-align: center;
+        display: none !important; /* Hide security info on mobile for simplicity */
+
+        
     }
     
     .recording-warning, .camera-warning {
         font-size: 12px;
         padding: 10px 15px;
     }
+
 } 

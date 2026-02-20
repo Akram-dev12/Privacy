@@ -676,6 +676,7 @@ button:disabled {
         flex-direction: row;
         align-items: flex-end;
         gap: 8px;
+        margin-bottom: 32px; /* Increased margin for better visibility on mobile */
     }
     
     #security-info {

@@ -156,6 +156,49 @@ body::after {
     /* No animation on text content to prevent blinking */
 }
 
+/* Code block styles */
+.code-block {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-left: 3px solid #00ff41;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 6px 0;
+    overflow-x: auto;
+    white-space: pre;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #00ff41;
+    display: block;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+.code-block code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.inline-code {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #00ff41;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
 /* 4. Hardware protection with reduced intensity */
 .hardware-protection {
     position: fixed;

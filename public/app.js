@@ -791,7 +791,7 @@ class SecureChat {
                 <span class="message-status">${isOwn ? '✓ Sent' : '📥 Received'}</span>
                 <span class="security-level">${securityIndicator}</span>
             </div>
-            <div class="message-content">${this.escapeHtml(decryptedContent)}</div>
+            <div class="message-content">${this.renderMessageContent(decryptedContent)}</div>
             ${messageInfo.interpretation ? `<div class="message-interpretation">${messageInfo.interpretation}</div>` : ''}
             ${!isOwn ? `<div class="message-feedback">
                 <button class="feedback-btn" onclick="window.secureChat.sendFeedback('${message.id}', 'ack')" title="Acknowledge">✓</button>
@@ -923,6 +923,25 @@ class SecureChat {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // Render message content with code block support.
+    // HTML is escaped first so user content is always safe.
+    renderMessageContent(text) {
+        // Escape all HTML entities in the raw text first
+        const escaped = this.escapeHtml(text);
+
+        // Replace fenced code blocks: ```...``` (may span multiple lines)
+        let rendered = escaped.replace(/```([\s\S]*?)```/g, (_, code) => {
+            return `<pre class="code-block"><code>${code}</code></pre>`;
+        });
+
+        // Replace inline code: `...` (single line only)
+        rendered = rendered.replace(/`([^`\r\n]+)`/g, (_, code) => {
+            return `<code class="inline-code">${code}</code>`;
+        });
+
+        return rendered;
     }
 
     // Security cleanup
